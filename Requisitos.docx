@@ -1,0 +1,88 @@
+📄 Documento de Projeto: Bot de Trading AI-HB (Nível 2)
+1. Visão Geral
+O objetivo é transformar um protótipo de trading em um ecossistema autônomo e resiliente que utiliza um "Comitê de Decisão" (Ensemble) para identificar oportunidades de alta probabilidade no mercado de criptoativos, com execução via API da Binance e monitoramento interativo via Telegram e Web Dashboard.
+
+2. Arquitetura do Sistema (Organismo Vivo)
+O sistema será dividido em 4 camadas independentes comunicando-se de forma assíncrona:
+
+A. Camada de Ingestão e Monitoramento (Sentidos)
+Websocket Manager: Conexão contínua com a Binance para preços em tempo real.
+
+Anomalies Scanner: Monitor de volume anômalo e volatilidade relativa (detecta onde o dinheiro está entrando).
+
+Order Flow Monitor: Analisador de profundidade do Book (Tape Reading) para confirmar a pressão compradora.
+
+B. Camada de Inteligência (Cérebro)
+Technical ML Model: Random Forest/XGBoost processando indicadores (RSI, Bollinger, ATR, EMA).
+
+Regime Classifier: Identificador de estado do mercado (Tendência de Alta, Baixa ou Lateral).
+
+Ensemble Judge: Lógica que pondera os sinais dos modelos para gerar uma "Nota de Confiança" final.
+
+C. Camada de Execução e Risco (Coração)
+Sniper Executor: Gerencia ordens de compra e venda.
+
+Dynamic Risk Controller: Aplica a "Mão Sniper" (multiplicador de lote) com base na confiança da IA.
+
+Trailing Stop Engine: Gerencia a saída das operações para maximizar o lucro.
+
+D. Camada de Interface (Comunicação)
+FastAPI Gateway: Ponte de comunicação entre o bot e o mundo externo.
+
+Telegram Bot Interativo: Notificações em tempo real com botões de ação (Autorizar/Ignorar).
+
+Next.js Dashboard: Painel visual para métricas de PNL, histórico e logs de decisão.
+
+3. Estrutura de Dados (Memória)
+Utilizaremos PostgreSQL para persistência e Redis para cache de alta velocidade.
+
+Tabela configuracoes: Chaves, limites de saldo e travas de segurança.
+
+Tabela operacoes_ativas: Registro de trades abertos com metadados da IA.
+
+Tabela historico_decisoes: (Novo) Salva todos os sinais gerados, mesmo os que não foram operados, para análise de performance da IA e re-treinamento futuro.
+
+4. Diferenciais Estratégicos (A "Mágica" do Rendimento)
+Filtro de Fluxo: Só compra se o preço subir 0.6% E o volume comprador no book confirmar a reversão.
+
+Saídas Parciais: Venda de 50% no alvo 1, deixando o restante correr com trailing stop no lucro.
+
+Auto-Vacina: Módulo de re-treinamento periódico baseado nos erros e acertos reais do bot.
+
+5. Roadmap de Implementação (Etapas)
+Etapa 1: Reestruturação da árvore de diretórios e separação do código atual em módulos.
+
+Etapa 2: Implementação da FastAPI e do Telegram Bot Interativo (Interface).
+
+Etapa 3: Criação do Order Flow Monitor (Camada de Fluxo).
+
+Etapa 4: Desenvolvimento do Ensemble Model (Integrar o modelo técnico com o de regime).
+
+Etapa 5: Construção do Dashboard Web (Visualização).
+
+
+
+aegis_alpha/
+├── engine/                   # O "Coração" (Execução e Conectividade)
+|   |__ analytics.py          # Gera relatórios graficos de performance       
+│   ├── binance_client.py     # Conexão Websocket (Preço em tempo real)
+│   ├── executor.py           # Envio de ordens (Market, Limit, Trailing)
+|   |__ notifier.py           # Faz integração com chatbot do telegram e envio de notificações
+│   └── wallet_manager.py     # Gestão de saldo e travas de segurança
+├── brain/                    # A "Mente" (Inteligência Artificial)
+│   ├── models/               # Arquivos .pkl ou .h5 (XGBoost, LSTM, etc)
+│   ├── feature_factory.py    # Transforma dados brutos em indicadores para a IA
+│   └── ensemble.py           # O "Juiz" que combina as notas de diferentes modelos
+├── observers/                # Os "Sentidos" (Monitoramento)
+│   ├── market_scanner.py     # Busca por anomalias de volume e volatilidade
+│   ├── sentiment_check.py    # Scraping de redes sociais/notícias (NLP)
+│   └── order_flow.py         # Analisa o Book de Ofertas (Tape Reading)
+├── database/                 # A "Memória"
+│   ├── models.py             # Definição das tabelas (SQLAlchemy)
+│   └── migrations/           # Controle de versão do banco
+├── trainer/                  # O "Ginásio" (Auto-aperfeiçoamento)
+│   ├── backtest_engine.py    # Testa novas estratégias em dados passados
+│   └── auto_retrain.py       # Script que re-treina o modelo com erros recentes
+|   |__ data_miner_trainer.py # Minera dados históricos das moedas, extrai features e efetua treinamento
+└── main.py                   # O Orquestrador (Inicia os processos em paralelo)
+|__ requirements.txt          # Possui todos os pacotes para instalar
